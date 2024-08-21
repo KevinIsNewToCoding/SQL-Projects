@@ -1,0 +1,109 @@
+-- first question
+WITH RECURSIVE EmployeeHierarchy AS (
+    SELECT EmployeeID, ManagerID, EmployeeName
+    FROM Employees
+    WHERE ManagerID = 123 -- Replace 123 with the ID of the manager you are interested in
+
+    UNION ALL
+
+    SELECT e.EmployeeID, e.ManagerID, e.EmployeeName
+    FROM Employees e
+    INNER JOIN EmployeeHierarchy eh ON e.ManagerID = eh.EmployeeID
+)
+SELECT * FROM EmployeeHierarchy;
+-- second question
+SELECT 
+    ProductID,
+    SaleDate,
+    SUM(SalesAmount) OVER (PARTITION BY ProductID, YEAR(SaleDate), MONTH(SaleDate) 
+                           ORDER BY SaleDate ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS RunningTotal
+FROM Sales
+ORDER BY ProductID, SaleDate;
+-- third question
+-- Example of adding indexes for optimization
+CREATE INDEX idx_sales_product ON Sales(ProductID);
+CREATE INDEX idx_sales_date ON Sales(SaleDate);
+
+-- Rewriting a query with subqueries or common table expressions to improve performance
+WITH FilteredSales AS (
+    SELECT ProductID, SaleDate, SalesAmount
+    FROM Sales
+    WHERE SaleDate >= '2024-01-01' AND SaleDate < '2025-01-01'
+)
+SELECT p.ProductName, SUM(fs.SalesAmount)
+FROM FilteredSales fs
+INNER JOIN Products p ON fs.ProductID = p.ProductID
+GROUP BY p.ProductName;
+-- forth question
+SET @sql = NULL;
+SET @column = 'YourColumnName'; -- Replace with the desired column name
+SELECT
+    GROUP_CONCAT(DISTINCT
+        CONCAT(
+            'SUM(CASE WHEN ', @column, ' = ''',
+            @column_value, ''' THEN 1 ELSE 0 END) AS `',
+            @column_value, '`'
+        )
+    ) INTO @sql
+FROM your_table;
+
+SET @sql = CONCAT('SELECT YourGroupByColumn, ', @sql, ' FROM your_table GROUP BY YourGroupByColumn');
+
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
+-- fifth question
+SELECT e.EmployeeID, e.EmployeeName, e.DepartmentID, e.SalesAmount
+FROM Employees e
+WHERE (SELECT COUNT(*) 
+       FROM Employees e2 
+       WHERE e2.SalesAmount > e.SalesAmount AND e2.DepartmentID = e.DepartmentID) < 3
+ORDER BY e.DepartmentID, e.SalesAmount DESC;
+-- sixth question
+SELECT id, JSON_UNQUOTE(JSON_EXTRACT(json_column, '$.key')) AS extracted_value
+FROM your_table
+WHERE JSON_EXTRACT(json_column, '$.key') = 'desired_value';
+-- seventh question
+SELECT a.*, b.*
+FROM TableA a
+LEFT JOIN TableB b ON a.id = b.id
+UNION ALL
+SELECT a.*, b.*
+FROM TableA a
+RIGHT JOIN TableB b ON a.id = b.id
+WHERE a.id IS NULL;
+-- eight question
+-- Example index for a combination of columns
+CREATE INDEX idx_sales_combination ON Sales(ProductID, SaleDate, CustomerID);
+
+-- Query leveraging the index
+SELECT ProductID, SaleDate, CustomerID, SalesAmount
+FROM Sales
+WHERE ProductID = 101 AND SaleDate BETWEEN '2024-01-01' AND '2024-12-31';
+-- ninth question
+DELIMITER $$
+CREATE PROCEDURE GetTotalSalesByProductIDs(IN product_ids JSON)
+BEGIN
+    SELECT 
+        p.ProductID,
+        SUM(s.SalesAmount) AS TotalSales
+    FROM Sales s
+    JOIN Products p ON s.ProductID = p.ProductID
+    WHERE JSON_CONTAINS(product_ids, JSON_QUOTE(p.ProductID))
+    GROUP BY p.ProductID;
+END $$
+DELIMITER ;
+
+-- To call the procedure
+CALL GetTotalSalesByProductIDs('["101", "102", "103"]');
+-- tenth question
+SELECT 
+    id, 
+    SaleDate,
+    ProductID,
+    SalesAmount,
+    COALESCE(SalesAmount, LAG(SalesAmount) OVER (PARTITION BY ProductID ORDER BY SaleDate)) AS FilledSalesAmount
+FROM Sales
+ORDER BY ProductID, SaleDate;
+
+
