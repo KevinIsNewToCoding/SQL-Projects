@@ -1,0 +1,30 @@
+Recursive CTEs:
+
+How would you use a recursive Common Table Expression (CTE) to find all employees in a company hierarchy who report directly or indirectly to a particular manager?
+Window Functions:
+
+Can you write a query using window functions to calculate a running total of sales for each day, partitioned by each product, while also resetting the total at the beginning of each month?
+Query Optimization:
+
+Given a complex query with multiple joins, how would you go about optimizing its performance? What techniques or indexes would you consider, and why?
+Dynamic SQL:
+
+How would you write a dynamic SQL query that generates a pivot table based on data from a column that you specify at runtime?
+Nested Subqueries:
+
+Can you create a query that returns the top three employees with the highest sales in each department, using a correlated subquery?
+JSON Manipulation:
+
+How would you extract and manipulate data from a JSON column in MySQL? Can you write a query to filter rows based on a specific value within the JSON data?
+Advanced Joins:
+
+How would you perform a full outer join in MySQL, which does not natively support this operation? Can you provide an alternative query?
+Indexing Strategy:
+
+How would you determine the best indexing strategy for a table with millions of rows where queries often filter by a combination of columns with different data types?
+Stored Procedures:
+
+How would you write a stored procedure that accepts a list of product IDs and returns the total sales for each product in the list? How would you handle cases where some IDs might not exist in the database?
+Handling NULLs:
+
+How would you write a query to replace NULL values with the previous non-NULL value within a partition, assuming you are working with ordered data
